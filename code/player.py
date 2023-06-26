@@ -57,12 +57,14 @@ class Player(pygame.sprite.Sprite):
 
 		# Ifall antalet frames är uppnått för uppdatering av position
 
-		if self.update_pos_timer >= UPDATE_POS_COOLDOWN:
+		if self.update_pos_timer >= UPDATE_POS_COOLDOWN and self.client != self.server.my_key:
 			# Ritar spelaren efter dictionaryns positioner varannan sekund
 			# Din egna spelare är uppdaterad av dig själv, resterande av servern!
 
 			self.hitbox.x = players[self.client]['X']
+			self.collision('horizontal')
 			self.hitbox.y = players[self.client]['Y']
+			self.collision('vertical')
 
 			# Nollställer timern igen
 			self.update_pos_timer = 0
