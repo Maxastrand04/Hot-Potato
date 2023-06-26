@@ -28,6 +28,12 @@ class Server():
         self.update = pygame.time.Clock()
 
         self.start_draw = False
+        self.IP = self.get_public_ip()
+
+    def get_public_ip(self):
+        resolver = socket.getaddrinfo('google.com', 80, socket.AF_INET, socket.SOCK_STREAM)
+        ip = resolver[0][4][0]
+        return ip
 
     def start_thread(self, function, arguments = None):
         if arguments == None: 
@@ -38,11 +44,11 @@ class Server():
     def start_listen(self):
         
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print(self.host)
+        print(self.IP)
 
         self.this_is_host = True
 
-        server.bind((self.host, self.port))
+        server.bind((self.IP, self.port))
         server.listen()
 
         self.start_draw = True
@@ -71,16 +77,16 @@ class Server():
         connected = False
         while True:
 
-            input()
-            IP = '192.168.1.5'
+            ip = input('IP-Adress: ')
+            
             try:
                 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                client.connect((IP, self.port))
+                client.connect((ip, self.port))
 
                 connected = True
 
             except:
-                print('felaktig address!')
+                print('felaktig adress!')
 
             if connected == True:
 
