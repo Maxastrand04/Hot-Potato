@@ -1,4 +1,4 @@
-import socket, pygame, threading, json
+import socket, pygame, threading, json, requests
 from settings import *
 from debug import debug
 
@@ -31,8 +31,8 @@ class Server():
         self.IP = self.get_public_ip()
 
     def get_public_ip(self):
-        resolver = socket.getaddrinfo('google.com', 80, socket.AF_INET, socket.SOCK_STREAM)
-        ip = resolver[0][4][0]
+        response = requests.get('https://api.ipify.org?format=json')
+        ip = response.json()['ip']
         return ip
 
     def start_thread(self, function, arguments = None):
@@ -48,7 +48,7 @@ class Server():
 
         self.this_is_host = True
 
-        server.bind((self.IP, self.port))
+        server.bind((self.host, self.port))
         server.listen()
 
         self.start_draw = True

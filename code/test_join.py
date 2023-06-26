@@ -1,22 +1,21 @@
-import socket, json
+import requests
+import socket
 
-IP = "192.168.1.5"
-PORT = 5000
-FORMAT = 'utf-8'
+def get_public_ip():
+    response = requests.get('https://api.ipify.org?format=json')
+    ip = response.json()['ip']
+    return ip
 
-try:
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((IP, PORT))
+server_ip = get_public_ip()
+server_port = 8000  # Replace with the desired port number
 
-    print('KOPPLAD!')
+# Create a socket object
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-except:
-    print('inte godkänt')
+# Bind the socket to the public IP address and port
+server_socket.bind((server_ip, server_port))
 
+# Start listening for incoming connections
+server_socket.listen()
 
-msg = 'hello there'
-
-json_msg = json.dumps(msg)
-
-client.send(json_msg.encode(FORMAT))
-
+print('listening to: ' + server_ip + ':' + server_port)
