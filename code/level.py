@@ -10,6 +10,7 @@ class Level():
 
 		# Hämtar servern så vi kan kalla nägra funktioner
 		self.server = server
+		self.start_draw = start_draw
 
 		# get the display surface 
 		self.display_surface = pygame.display.get_surface()
@@ -33,13 +34,6 @@ class Level():
 				y = row_index * TILESIZE
 				if col == 'x':
 					Tile((x,y),[self.visible_sprites,self.obstacle_sprites])
-				if col == 'p':
-					if self.server.this_is_host == True:
-						player = Player(self.server.my_key, (x,y),[self.visible_sprites],self.obstacle_sprites, self.server)
-						self.active_players[self.server.my_key] = player
-					else:
-						player = Player(None, (x,y),[self.visible_sprites],self.obstacle_sprites, self.server, self.add_key)
-						self.active_players[None] = player
 
 	def add_key(self):
 		# Skapar en ny dictionary så vi kan ändra nycklarna
@@ -63,19 +57,35 @@ class Level():
 
 		for client, _ in players.items():
 			if not client in self.active_players:
+				x = players[client]['init_X'] * TILESIZE
+				players[client]['X'] = x
+				y = players[client]['init_Y'] * TILESIZE
+				players[client]['Y'] = y
 
-				x = players[client]['X'] * TILESIZE
-				y = players[client]['Y'] * TILESIZE
 
 				player = Player(client, (x,y), [self.visible_sprites], self.obstacle_sprites, self.server)
 				self.active_players[client] = player
 
 	def run(self):
-		# update and draw the game
-		if self.server.my_key in self.active_players:
-			self.visible_sprites.custom_draw(self.active_players[self.server.my_key])
-		self.visible_sprites.update()
-		self.player_join()
+		if self.server.start_draw:
+			# update and draw the game
+			if self.server.my_key in self.active_players:
+				self.visible_sprites.custom_draw(self.active_players[self.server.my_key])
+			self.visible_sprites.update()
+			self.player_join()
+			debug(self.server.my_key + str(players[self.server.my_key]))
+			#if len(self.active_players) > 1:
+				#for players in self.active
+
+			#if self.server.my_key == self.server.host_key and len(self.active_players) > 0:
+				#for client, _ in self.active_players.items():
+
+					#players[client]['X'] = self.active_players[client].hitbox.x
+					#players[client]['Y'] = self.active_players[client].hitbox.y
+					#print(players)
+
+					#print(client, players[client]['X'], players[client]['Y'])
+
 
 
 

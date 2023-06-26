@@ -6,7 +6,7 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self, client, pos,groups,obstacle_sprites, server, add_key = None):
 		super().__init__(groups)
 		self.image = pygame.image.load('../graphics/test/player.png').convert_alpha()
-		self.rect = self.image.get_rect(topleft = pos)
+		self.rect = self.image.get_rect(center = pos)
 		self.hitbox = self.rect.inflate(0,-26)
 
 		self.direction = pygame.math.Vector2()
@@ -20,6 +20,9 @@ class Player(pygame.sprite.Sprite):
 
 		#	Om funktion för att lägga till en nyckel tillkommer
 		self.add_key = add_key
+
+		# Timer som har kolla på hur länge sedan alla spelares postion uppdaterades från serverns data
+		self.update_pos_timer = 0
 
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -49,27 +52,36 @@ class Player(pygame.sprite.Sprite):
 
 	def move(self,speed):
 
-		# Ifall spelaren är av en annan klient så bestäms rörelsen av information skickat av servern
-		if self.client != self.server.my_key and self.client != None:
-			self.direction.x = players[self.client]['direction_X']
-			self.direction.y = players[self.client]['direction_Y']
+		if self.update_pos_timer >= UPDATE_POS_COOLDOWN:
+			# Ritear spelaren efter serverns positioner
+			self.hitbox.x = players[self.client]['X']
+			self.hitbox.y = players[self.client]['Y']
 
-		#Normaliserar så att längden på direction aldrig är längre än 1 och därmed samma hastighet när man går diagonalt
-		if self.direction.magnitude() != 0:
-			self.direction = self.direction.normalize()
+			# Nollställer timern igen
+			self.update_pos_timer = 0
 
-		
-		# Flyttar i X-led och kollar kollision
-		self.hitbox.x += self.direction.x * speed
-		if len(players) > 0:
-			players[self.client]['X'] = self.hitbox.x
-		self.collision('horizontal')
+		else:
 
-		# Flyttar i Y-led och kollar kollision
-		self.hitbox.y += self.direction.y * speed
-		if len(players) > 0:
-			players[self.client]['Y'] = self.hitbox.y
-		self.collision('vertical')
+			# Ifall spelaren är av en annan klient så bestäms rörelsen av information skickat av servern
+			if self.client != self.server.my_key and self.client != None:
+				self.direction.x = players[self.client]['direction_X']
+				self.direction.y = players[self.client]['direction_Y']
+
+			#Normaliserar så att längden på direction aldrig är längre än 1 och därmed samma hastighet när man går diagonalt
+			if self.direction.magnitude() != 0:
+				self.direction = self.direction.normalize()
+			
+			# Flyttar i X-led och kollar kollision
+			self.hitbox.x += self.direction.x * speed
+			if len(players) > 0:
+				players[self.client]['X'] = self.hitbox.x
+			self.collision('horizontal')
+
+			# Flyttar i Y-led och kollar kollision
+			self.hitbox.y += self.direction.y * speed
+			if len(players) > 0:
+				players[self.client]['Y'] = self.hitbox.y
+			self.collision('vertical')
 
 		# Ritar bilden mitt i hitboxen
 		self.rect.center = self.hitbox.center
@@ -100,6 +112,8 @@ class Player(pygame.sprite.Sprite):
 				self.client = self.server.my_key
 				if self.add_key:
 					self.add_key()
+		self.update_pos_timer += 1
+
 		
 
 

@@ -5,6 +5,10 @@ FPS      = 60
 TILESIZE = 64
 SERVER_UPDATE = 30
 
+start_draw = False
+
+UPDATE_POS_COOLDOWN = 120
+
 WORLD_MAP = [
 ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'],
 ['x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
@@ -28,6 +32,4 @@ WORLD_MAP = [
 ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'],
 ]
 
-players = {
-    
-}
+players = {}
