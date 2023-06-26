@@ -12,7 +12,7 @@ class Level():
 		self.server = server
 		self.start_draw = start_draw
 
-		# get the display surface 
+		# Tar fram display ytan 
 		self.display_surface = pygame.display.get_surface()
 
 		# sprite group setup
@@ -22,16 +22,19 @@ class Level():
 		# Tom dictionary att lägga in alla spelare med nyckel som är dess IP
 		self.active_players = {}
 
-		# sprite setup
+		# skapar mappen
 		self.create_map()
 
 	
 
 	def create_map(self):
+		# Loopar genom alla rader
 		for row_index,row in enumerate(WORLD_MAP):
+			# Loopar genom alla kollumner
 			for col_index, col in enumerate(row):
 				x = col_index * TILESIZE
 				y = row_index * TILESIZE
+				# Ifall en ruta har ett 'x' så ritas en sten
 				if col == 'x':
 					Tile((x,y),[self.visible_sprites,self.obstacle_sprites])
 
@@ -55,36 +58,36 @@ class Level():
 
 	def player_join(self):
 
+		# Kollar efter spelarna ifall det finns en som inte är utritad
 		for client, _ in players.items():
+
+			# Om en spelare inte är med som aktiv spelare
 			if not client in self.active_players:
+
+				# Tar de initiella positionerna i x och y och ser till att de aktiva x och y är samma
 				x = players[client]['init_X'] * TILESIZE
 				players[client]['X'] = x
 				y = players[client]['init_Y'] * TILESIZE
 				players[client]['Y'] = y
 
-
+				#Skapar en spelare och lägger till den i aktiva spelare
 				player = Player(client, (x,y), [self.visible_sprites], self.obstacle_sprites, self.server)
 				self.active_players[client] = player
 
+	# Uppdaterar och ritar spelet
 	def run(self):
+		
+		# Ifall servern ger ok att börja rita
 		if self.server.start_draw:
-			# update and draw the game
+
+			# ser till att kameran följer klientens spelare
 			if self.server.my_key in self.active_players:
 				self.visible_sprites.custom_draw(self.active_players[self.server.my_key])
+
+			# Uppdaterar allt som ska ritas och kollar ifall någon spelare läggs till
 			self.visible_sprites.update()
 			self.player_join()
 			debug(self.server.my_key + str(players[self.server.my_key]))
-			#if len(self.active_players) > 1:
-				#for players in self.active
-
-			#if self.server.my_key == self.server.host_key and len(self.active_players) > 0:
-				#for client, _ in self.active_players.items():
-
-					#players[client]['X'] = self.active_players[client].hitbox.x
-					#players[client]['Y'] = self.active_players[client].hitbox.y
-					#print(players)
-
-					#print(client, players[client]['X'], players[client]['Y'])
 
 
 
@@ -93,7 +96,7 @@ class Level():
 class YSortCameraGroup(pygame.sprite.Group):
 	def __init__(self):
 
-		# general setup 
+		# generrell setup
 		super().__init__()
 		self.display_surface = pygame.display.get_surface()
 		self.half_width = self.display_surface.get_size()[0] // 2
@@ -102,7 +105,7 @@ class YSortCameraGroup(pygame.sprite.Group):
 
 	def custom_draw(self,player):
 
-		# getting the offset 
+		# Tar fram offset
 		self.offset.x = player.rect.centerx - self.half_width
 		self.offset.y = player.rect.centery - self.half_height
 

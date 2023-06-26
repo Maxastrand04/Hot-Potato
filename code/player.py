@@ -30,6 +30,7 @@ class Player(pygame.sprite.Sprite):
 		# Kollar så det är rätt klients input som flyttar spelaren
 		if self.client == self.server.my_key:
 
+			# Förflyttning i Y-LED
 			if keys[pygame.K_UP]:
 				self.direction.y = -1
 			elif keys[pygame.K_DOWN]:
@@ -37,6 +38,7 @@ class Player(pygame.sprite.Sprite):
 			else:
 				self.direction.y = 0
 
+			# Förflyttning i X-LED
 			if keys[pygame.K_RIGHT]:
 				self.direction.x = 1
 			elif keys[pygame.K_LEFT]:
@@ -44,7 +46,7 @@ class Player(pygame.sprite.Sprite):
 			else:
 				self.direction.x = 0
 
-			# Kollar så att det finns någon nyckel att lägga värdena i
+			# Kollar så att det finns någon nyckel att lägga värdena i (säkerhet)
 			if len(players) > 0:
 					
 				players[self.client]['direction_X']	= self.direction.x
@@ -52,13 +54,21 @@ class Player(pygame.sprite.Sprite):
 
 	def move(self,speed):
 
+
+		# Ifall antalet frames är uppnått för uppdatering av position
+
 		if self.update_pos_timer >= UPDATE_POS_COOLDOWN:
-			# Ritear spelaren efter serverns positioner
+			# Ritar spelaren efter dictionaryns positioner varannan sekund
+			# Din egna spelare är uppdaterad av dig själv, resterande av servern!
+
 			self.hitbox.x = players[self.client]['X']
 			self.hitbox.y = players[self.client]['Y']
 
 			# Nollställer timern igen
 			self.update_pos_timer = 0
+
+
+		# Annars förflyttning som vanligt
 
 		else:
 
@@ -89,29 +99,47 @@ class Player(pygame.sprite.Sprite):
 
 	def collision(self,direction):
 		if direction == 'horizontal':
+
 			for sprite in self.obstacle_sprites:
+
 				if sprite.hitbox.colliderect(self.hitbox):
-					if self.direction.x > 0: # moving right
+
+					if self.direction.x > 0: # Förflyttar höger
 						self.hitbox.right = sprite.hitbox.left
-					if self.direction.x < 0: # moving left
+
+					if self.direction.x < 0: # Förflyttar vänster
 						self.hitbox.left = sprite.hitbox.right
 
 		if direction == 'vertical':
+
 			for sprite in self.obstacle_sprites:
+
 				if sprite.hitbox.colliderect(self.hitbox):
-					if self.direction.y > 0: # moving down
+
+					if self.direction.y > 0: # Förflyttar ned
 						self.hitbox.bottom = sprite.hitbox.top
-					if self.direction.y < 0: # moving up
+
+					if self.direction.y < 0: # Förflyttar upp
 						self.hitbox.top = sprite.hitbox.bottom
 
 	def update(self):
 		self.input()
 		self.move(self.speed)
+
+		#Ifall spelaren inte har en klient
 		if self.client == None:
+
+			# Och jag har en klient nyckel
 			if self.server.my_key != None:
+
+				# Uppdaterar spelarens klient till klient nyckeln
 				self.client = self.server.my_key
+
+				# Om funktionen finns (ska finnas men för säkerhetens skull) så ska den aktiveras
 				if self.add_key:
 					self.add_key()
+
+		# ökar timern för postions uppdatering med 1 varje frame, vid 120 uppdateras spelarnas position
 		self.update_pos_timer += 1
 
 		
