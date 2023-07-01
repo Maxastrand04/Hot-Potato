@@ -77,7 +77,9 @@ class Server():
         connected = False
         while True:
 
-            ip = input('IP-Adress: ')
+            input('IP-Adress: ')
+
+            ip = self.host
             
             try:
                 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

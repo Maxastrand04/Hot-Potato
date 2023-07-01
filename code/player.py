@@ -46,11 +46,17 @@ class Player(pygame.sprite.Sprite):
 			else:
 				self.direction.x = 0
 
+			if keys[pygame.K_SPACE]:
+				self.hit()
+
 			# Kollar så att det finns någon nyckel att lägga värdena i (säkerhet)
 			if len(players) > 0:
 					
 				players[self.client]['direction_X']	= self.direction.x
 				players[self.client]['direction_Y']	= self.direction.y	
+
+	def hit(self):
+		pass
 
 	def move(self,speed):
 
