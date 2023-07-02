@@ -31,6 +31,7 @@ class Server():
 
         self.start_draw = False
         self.IP = self.get_public_ip()
+        self.server = None
 
     def get_public_ip(self):
         response = requests.get('https://api.ipify.org?format=json')
@@ -43,45 +44,93 @@ class Server():
         else:
             threading.Thread(target=function, args=arguments).start()
 
+# SERVER SIDAN 
     def start_listen(self):
         
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print(self.IP)
+        # Startar servern och lyssnar efter anslutningar
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.this_is_host = True
 
-        server.bind((self.host, self.port))
-        server.listen()
+        self.server.bind((self.host, self.port))
+        self.server.listen()
 
+        # Börjar rita spelet
         self.start_draw = True
 
 
         # Lägger till Hosten som en spelare
         players[self.host_key] = self.default_player_data
 
+        try:
+            while True:
+
+                client, addr = self.server.accept()
+
+                print('New connection from {}'.format(addr))
+                
+                # Lägger till den tillagda klienten som en spelare
+                client_key = '{}:{}'.format(addr[0], addr[1])
+                players[client_key] = self.default_player_data
+                
+                # Skickar den initiala datan till spelaren
+                init_data = json.dumps(players)
+                client.send(init_data.encode(self.format))
+
+                players[self.my_key]['hot_potato'] = True
+
+                self.start_thread(self.handle_client, (client, addr))
+        
+        except:
+            self.server.close()
+
+    def handle_client(self, client, addr):
+
+        client_key = '{}:{}'.format(addr[0], addr[1])
+        
         while True:
-            self.default_player_data['init_X']
+            self.send_data(client, client_key)
 
-            client, addr = server.accept()
+            self.update.tick(SERVER_UPDATE)
+        
+        
+        client.close()
 
-            print('New connection from {}'.format(addr))
-            
-            # Lägger till den tillagda klienten som en spelare
-            client_key = '{}:{}'.format(addr[0], addr[1])
+    def send_data(self, client, key):
+        # Börjar med att ta emot
+        data_upd = client.recv(1024)
 
-            players[client_key] = self.default_player_data
-            init_data = json.dumps(players)
-            client.send(init_data.encode(self.format))
+        #Sparar serverns information om hot potato innan den överskriver informationen
+        hot_potato = players[key]['hot_potato']
 
-            players[self.my_key]['hot_potato'] = True
+        if not data_upd:
+            client.close()
+        else:
+            data_upd = data_upd.decode(self.format)
+            data_upd = json.loads(data_upd)
+            players[key] = data_upd
 
-            self.start_thread(self.handle_client, (client, addr))
+            #Ändrar hot potato till det som servern anser är korrekt
+            players[key]['hot_potato'] = hot_potato
 
+            if players[key]['hot_potato_given'] != None:
+                players[players[key]['hot_potato_given']]['hot_potato'] = True
+                players[key]['hot_potato_given'] = None
+                players[key]['hot_potato'] = False
+
+        # Därefter skickar vidare
+        json_data = json.dumps(players)
+        client.send(json_data.encode(self.format))
+    
+    def close_server(self):
+        pass
+
+
+
+# KLIENT SIDAN AV SERVERN
     def join_server(self):
         connected = False
         while True:
-
-            input('IP-Adress: ')
 
             ip = self.host
             
@@ -102,7 +151,6 @@ class Server():
                 self.start_thread(self.handle_conn, (client,))
 
                 break
-
 
     def handle_conn(self, client):
 
@@ -156,42 +204,4 @@ class Server():
                     else:
                         if values['hot_potato'] == True:
                             players[player]['hot_potato'] = True                                            
-
-    def handle_client(self, client, addr):
-
-        client_key = '{}:{}'.format(addr[0], addr[1])
-        
-        while True:
-            self.send_data(client, client_key)
-
-            self.update.tick(SERVER_UPDATE)
-        
-        
-        client.close()
-
-    def send_data(self, client, key):
-        # Börjar med att ta emot
-        data_upd = client.recv(1024)
-
-        #Sparar serverns information om hot potato innan den överskriver informationen
-        hot_potato = players[key]['hot_potato']
-
-        if not data_upd:
-            client.close()
-        else:
-            data_upd = data_upd.decode(self.format)
-            data_upd = json.loads(data_upd)
-            players[key] = data_upd
-
-            #Ändrar hot potato till det som servern anser är korrekt
-            players[key]['hot_potato'] = hot_potato
-
-            if players[key]['hot_potato_given'] != None:
-                players[players[key]['hot_potato_given']]['hot_potato'] = True
-                players[key]['hot_potato_given'] = None
-                players[key]['hot_potato'] = False
-
-        # Därefter skickar vidare
-        json_data = json.dumps(players)
-        client.send(json_data.encode(self.format))
 

@@ -57,32 +57,44 @@ class Player(pygame.sprite.Sprite):
 
 	def hit(self):
 
+		# kör endast ifall spelaren har hot_potato = true
 		if players[self.server.my_key]['hot_potato'] == True:
 
 			# Tom dictionary för att ha koll på avstånden mellan 
 			client_distances = {}
 
+			# Tar fram denn spelares koordinat för att göra en vektor med de koordinaterna
 			player_x = players[self.server.my_key]['X']
 			player_y = players[self.server.my_key]['Y']
 
 			player_vec = pygame.math.Vector2(player_x, player_y)
+
 			for client, data in players.items():
 
 				# Räknar inte med sig själv
 				if not client == self.server.my_key:
                     
+					# Tar fram x och y koordinater
 					enemy_x = data['X']
 					enemy_y = data['Y']
 
+					# Får fram en vektor med de koordinaterna
 					enemy_vec = pygame.math.Vector2(enemy_x, enemy_y)
 
+					# Få fram vektorn mellan denna spelare och motståndare
 					distance_vector = player_vec - enemy_vec
+					
+					# Får fram längden på vektorn
 					distance = distance_vector.length()
-					print(distance)
+
+					# Lägger till avståndet i en dictionary med klienten som nyckel
 					client_distances[client] = distance
+
 			
+			# Tar fram den närmsta spelaren
 			closest_player = min(client_distances, key=lambda k: client_distances[k])
 
+			# Är spelaren tillräckligt nära så skickas "hot_potato" vidare till den närmsta spelaren
 			if client_distances[closest_player] <= 80.0:
 				players[closest_player]['hot_potato'] = True
 				players[self.server.my_key]['hot_potato'] = False
