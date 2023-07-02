@@ -14,6 +14,8 @@ class Server():
                 'direction_Y': 0, 
                 'animation_index': 0,
                 'status': 'idle',
+                'hot_potato': False,
+                'hot_potato_given': None
             }
 
 
@@ -70,6 +72,8 @@ class Server():
             players[client_key] = self.default_player_data
             init_data = json.dumps(players)
             client.send(init_data.encode(self.format))
+
+            players[self.my_key]['hot_potato'] = True
 
             self.start_thread(self.handle_client, (client, addr))
 
@@ -133,6 +137,9 @@ class Server():
             json_data_123123 = json.dumps(data_to_send)
             client.send(json_data_123123.encode(self.format))
 
+            if players[self.my_key]['hot_potato_given']!= None:
+                players[self.my_key]['hot_potato_given'] = None
+
 
             # Därefter tar emot värden
             get_data = client.recv(1024)
@@ -146,6 +153,9 @@ class Server():
                 for player, values in get_data.items():
                     if not player == self.my_key:
                         players[player] = values
+                    else:
+                        if values['hot_potato'] == True:
+                            players[player]['hot_potato'] = True                                            
 
     def handle_client(self, client, addr):
 
@@ -162,12 +172,25 @@ class Server():
     def send_data(self, client, key):
         # Börjar med att ta emot
         data_upd = client.recv(1024)
+
+        #Sparar serverns information om hot potato innan den överskriver informationen
+        hot_potato = players[key]['hot_potato']
+
         if not data_upd:
             client.close()
         else:
             data_upd = data_upd.decode(self.format)
             data_upd = json.loads(data_upd)
             players[key] = data_upd
+
+            #Ändrar hot potato till det som servern anser är korrekt
+            players[key]['hot_potato'] = hot_potato
+
+            if players[key]['hot_potato_given'] != None:
+                players[players[key]['hot_potato_given']]['hot_potato'] = True
+                players[key]['hot_potato_given'] = None
+                players[key]['hot_potato'] = False
+
         # Därefter skickar vidare
         json_data = json.dumps(players)
         client.send(json_data.encode(self.format))

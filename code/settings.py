@@ -3,11 +3,11 @@ WIDTH    = 720
 HEIGTH   = 720
 FPS      = 60
 TILESIZE = 64
-SERVER_UPDATE = 30
+SERVER_UPDATE = 60
 
 start_draw = False
 
-UPDATE_POS_COOLDOWN = 120
+UPDATE_POS_COOLDOWN = 30
 
 WORLD_MAP = [
 ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'],

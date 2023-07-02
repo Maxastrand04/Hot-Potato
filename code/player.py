@@ -56,7 +56,39 @@ class Player(pygame.sprite.Sprite):
 				players[self.client]['direction_Y']	= self.direction.y	
 
 	def hit(self):
-		pass
+
+		if players[self.server.my_key]['hot_potato'] == True:
+
+			# Tom dictionary för att ha koll på avstånden mellan 
+			client_distances = {}
+
+			player_x = players[self.server.my_key]['X']
+			player_y = players[self.server.my_key]['Y']
+
+			player_vec = pygame.math.Vector2(player_x, player_y)
+			for client, data in players.items():
+
+				# Räknar inte med sig själv
+				if not client == self.server.my_key:
+                    
+					enemy_x = data['X']
+					enemy_y = data['Y']
+
+					enemy_vec = pygame.math.Vector2(enemy_x, enemy_y)
+
+					distance_vector = player_vec - enemy_vec
+					distance = distance_vector.length()
+					print(distance)
+					client_distances[client] = distance
+			
+			closest_player = min(client_distances, key=lambda k: client_distances[k])
+
+			if client_distances[closest_player] <= 80.0:
+				players[closest_player]['hot_potato'] = True
+				players[self.server.my_key]['hot_potato'] = False
+				players[self.server.my_key]['hot_potato_given'] = closest_player
+
+			
 
 	def move(self,speed):
 

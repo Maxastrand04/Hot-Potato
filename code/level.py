@@ -87,7 +87,7 @@ class Level():
 			# Uppdaterar allt som ska ritas och kollar ifall någon spelare läggs till
 			self.visible_sprites.update()
 			self.player_join()
-			debug(self.server.my_key + str(players[self.server.my_key]))
+			debug(players[self.server.my_key]['hot_potato'])
 
 
 
