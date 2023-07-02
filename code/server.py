@@ -32,6 +32,7 @@ class Server():
         self.start_draw = False
         self.IP = self.get_public_ip()
         self.server = None
+        self.server_shutdown = False
 
     def get_public_ip(self):
         response = requests.get('https://api.ipify.org?format=json')
@@ -89,6 +90,10 @@ class Server():
         client_key = '{}:{}'.format(addr[0], addr[1])
         
         while True:
+            if self.server_shutdown:
+                self.send_data(client, client_key, True)
+                break
+
             self.send_data(client, client_key)
 
             self.update.tick(SERVER_UPDATE)
@@ -96,31 +101,36 @@ class Server():
         
         client.close()
 
-    def send_data(self, client, key):
+    def send_data(self, client, key, server_closed = False):
         # Börjar med att ta emot
         data_upd = client.recv(1024)
 
-        #Sparar serverns information om hot potato innan den överskriver informationen
-        hot_potato = players[key]['hot_potato']
+        if not server_closed:
 
-        if not data_upd:
-            client.close()
+            #Sparar serverns information om hot potato innan den överskriver informationen
+            hot_potato = players[key]['hot_potato']
+
+            if not data_upd:
+                client.close()
+            else:
+                data_upd = data_upd.decode(self.format)
+                data_upd = json.loads(data_upd)
+                players[key] = data_upd
+
+                #Ändrar hot potato till det som servern anser är korrekt
+                players[key]['hot_potato'] = hot_potato
+
+                if players[key]['hot_potato_given'] != None:
+                    players[players[key]['hot_potato_given']]['hot_potato'] = True
+                    players[key]['hot_potato_given'] = None
+                    players[key]['hot_potato'] = False
+
+            # Därefter skickar vidare
+            json_data = json.dumps(players)
+            client.send(json_data.encode(self.format))
+        
         else:
-            data_upd = data_upd.decode(self.format)
-            data_upd = json.loads(data_upd)
-            players[key] = data_upd
-
-            #Ändrar hot potato till det som servern anser är korrekt
-            players[key]['hot_potato'] = hot_potato
-
-            if players[key]['hot_potato_given'] != None:
-                players[players[key]['hot_potato_given']]['hot_potato'] = True
-                players[key]['hot_potato_given'] = None
-                players[key]['hot_potato'] = False
-
-        # Därefter skickar vidare
-        json_data = json.dumps(players)
-        client.send(json_data.encode(self.format))
+            client.send(SERVER_CLOSED.encode(self.format))
     
     def close_server(self):
         pass
@@ -173,6 +183,9 @@ class Server():
             self.get_data(client)
 
             self.update.tick(SERVER_UPDATE)
+
+            if self.server_shutdown:
+                break
         
         client.close()
 
@@ -196,8 +209,13 @@ class Server():
                 client.close()
             else:
                 get_data = get_data.decode(self.format)
+                
+                if get_data == SERVER_CLOSED:
+                    self.server_shutdown = True
+                    return
+                
                 get_data = json.loads(get_data)
-                #print(get_data)
+
                 for player, values in get_data.items():
                     if not player == self.my_key:
                         players[player] = values

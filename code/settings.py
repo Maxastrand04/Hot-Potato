@@ -6,6 +6,7 @@ HEIGTH   = 720
 FPS      = 60
 TILESIZE = 64
 SERVER_UPDATE = 60
+SERVER_CLOSED = 'server_closed'
 
 start_draw = False
 

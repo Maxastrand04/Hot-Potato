@@ -81,6 +81,7 @@ class Main_menu:
 					if self.quit_button.check_for_input(menu_mouse_pos):
 						try:
 							self.server.server.close()
+							self.server.server_shutdown = True
 						except:
 							pass
 						pygame.quit()
