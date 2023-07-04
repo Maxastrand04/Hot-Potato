@@ -3,7 +3,10 @@ from settings import *
 from debug import debug
 
 class Server():
-    def __init__(self):
+    def __init__(self, main_menu):
+
+        # hämtar alla variabler från menyn
+        self.main_menu = main_menu
 
         self.default_player_data = {
                 'X': 2,
@@ -33,6 +36,9 @@ class Server():
         self.IP = self.get_public_ip()
         self.server = None
         self.server_shutdown = False
+        self.unable_to_join = False
+
+        self.IP_to_join = self.main_menu.input_text
 
     def get_public_ip(self):
         response = requests.get('https://api.ipify.org?format=json')
@@ -141,17 +147,15 @@ class Server():
     def join_server(self):
         connected = False
         while True:
-
-            ip = self.host
-            
             try:
                 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                client.connect((ip, self.port))
+                client.connect((self.IP_to_join, self.port))
 
                 connected = True
 
             except:
-                print('felaktig adress!')
+                self.unable_to_join = True
+                break
 
             if connected == True:
 

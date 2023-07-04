@@ -4,6 +4,7 @@ from server import *
 from tile import Tile
 from player import Player
 from debug import debug
+from ui import UI
 
 class Level():
 	def __init__(self, server):
@@ -24,6 +25,8 @@ class Level():
 
 		# skapar mappen
 		self.create_map()
+
+		self.ui = UI(self)
 
 	
 
@@ -86,6 +89,7 @@ class Level():
 
 			# Uppdaterar allt som ska ritas och kollar ifall någon spelare läggs till
 			self.visible_sprites.update()
+			self.ui.update()
 			self.player_join()
 			debug(players[self.server.my_key]['hot_potato'])
 
