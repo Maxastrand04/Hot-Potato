@@ -11,7 +11,7 @@ class Game:
 		self.main_menu = main_menu
 		self.level = Level(self.main_menu.server)
 		self.pause_menu = Pause_menu(self.main_menu)
-		self.settings = Settings_menu()
+		self.settings = Settings_menu(self.main_menu)
 
 		if host_or_join == 'host':
 
@@ -67,6 +67,12 @@ class Main_menu:
 		self.quit_button = Button(CENTRAL_X, 600, 'QUIT', get_font(75))
 
 	def run(self):
+
+		# Stänger ner den aktiva servern/kopplingen för att kunna starta en ny
+		if self.server:
+			self.server.server_shutdown = True
+			self.server = None
+
 		while True:
 
 			menu_mouse_pos = pygame.mouse.get_pos()

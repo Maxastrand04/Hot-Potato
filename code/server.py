@@ -95,14 +95,14 @@ class Server():
 
         client_key = '{}:{}'.format(addr[0], addr[1])
         
-        while True:
-            if self.server_shutdown:
-                self.send_data(client, client_key, True)
-                break
+        while not self.server_shutdown:
 
             self.send_data(client, client_key)
 
             self.update.tick(SERVER_UPDATE)
+        
+
+        self.send_data(client, client_key, True)
         
         
         client.close()
@@ -183,13 +183,10 @@ class Server():
         # Körs sedan för att uppdatera bilden
 
         self.start_draw = True
-        while True:
+        while not self.server_shutdown:
             self.get_data(client)
 
             self.update.tick(SERVER_UPDATE)
-
-            if self.server_shutdown:
-                break
         
         client.close()
 
